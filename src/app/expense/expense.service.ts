@@ -6,14 +6,14 @@ import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 
-export class ExpenseServiceService {
+export class ExpenseService {
   private readonly apiUrl = `${environment.backendUrl}/expenses`;
 
   constructor(private readonly httpClient: HttpClient) {}
 
   // Read
 
-  getExpense = (pagingCriteria: PagingCriteria): Observable<Page<Expense>> =>
+  getExpenses = (pagingCriteria: PagingCriteria): Observable<Page<Expense>> =>
     this.httpClient.get<Page<Expense>>(this.apiUrl, { params: new HttpParams({ fromObject: { ...pagingCriteria } }) });
 
   // Create & Update
@@ -22,6 +22,6 @@ export class ExpenseServiceService {
 
   // Delete
 
-  deleteCategory = (id: string): Observable<void> => this.httpClient.delete<void>(`${this.apiUrl}/${id}`);
+  deleteExpense = (id: string): Observable<void> => this.httpClient.delete<void>(`${this.apiUrl}/${id}`);
 
 }

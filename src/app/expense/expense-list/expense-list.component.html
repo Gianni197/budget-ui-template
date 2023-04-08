@@ -64,7 +64,7 @@
                 <ion-col>{{expense.name}}</ion-col>
                 <ion-col class='ion-text-center'>
                   <ion-icon name='pricetag'></ion-icon>
-                  {{expense.category?.name}}</ion-col>
+                  {{expense.category.name}}</ion-col>
                 <ion-col class='ion-text-end'>{{expense.amount | currency:'CHF'}}</ion-col>
               </ion-row>
             </ion-grid>
@@ -98,4 +98,3 @@
     </ion-buttons>
   </ion-toolbar>
 </ion-footer>
-

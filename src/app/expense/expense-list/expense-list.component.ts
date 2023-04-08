@@ -146,4 +146,3 @@ export class ExpenseListComponent implements OnInit, OnDestroy {
     this.loadExpenses(() => ($event ? ($event as RefresherCustomEvent).target.complete() : {}));
   }
 }
-
