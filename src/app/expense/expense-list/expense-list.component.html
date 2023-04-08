@@ -1,77 +1,101 @@
-<ion-header>
+<ion-header role='banner'>
   <ion-toolbar>
-    <ion-title>{{ date | date:'MMMM yyyy' }}</ion-title>
-    <ion-buttons slot='start' (click)='cancel()'>
-      <ion-button type="button" color="medium">
-        <ion-icon slot="start" name="close"></ion-icon>
-        Cancel
+    <ion-title>Expenses</ion-title>
+    <ion-progress-bar *ngIf='loading' type='indeterminate'></ion-progress-bar>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-refresher slot='fixed' (ionRefresh)='reloadExpenses($event)' [disabled]='loading'></ion-refresher>
+  <ion-grid class='ion-padding' [formGroup]='searchForm'>
+    <ion-row>
+      <ion-col>
+        <ion-item>
+          <ion-icon name='swap-vertical-outline' slot='start'></ion-icon>
+          <ion-select interface='popover' formControlName='sort'>
+            <ion-select-option *ngFor='let sortOption of sortOptions' [value]='sortOption.value'>
+              {{sortOption.label}}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col>
+        <ion-item>
+          <ion-icon name='pricetag-outline' slot='start'></ion-icon>
+          <ion-select placeholder='Category' interface='popover' multiple='true' formControlName='categoryIds'>
+            <ion-select-option role='option' *ngFor='let category of categories' [value]='category.id'>
+              {{category.name}}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+      </ion-col>
+      <ion-col>
+        <ion-item>
+          <ion-icon name='search-outline' slot='start'></ion-icon>
+          <ion-input placeholder='Search' [clearInput]='true' formControlName='name'></ion-input>
+        </ion-item>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+  <ion-list [ngSwitch]='expenseGroups?.length' inset='true'>
+    <!-- Skeleton -->
+    <ng-container *ngSwitchCase='null'>
+      <ion-item *ngFor='let i of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]'>
+        <ion-label>
+          <ion-skeleton-text [animated]='true' style='width: 80px'></ion-skeleton-text>
+        </ion-label>
+      </ion-item>
+    </ng-container>
+    <ion-item *ngSwitchCase='0'>
+      <ion-icon slot='start' name='alert-circle-outline'></ion-icon>
+      <ion-label>
+        No expenses found
+      </ion-label>
+    </ion-item>
+    <ng-container *ngSwitchDefault>
+      <ion-item-group *ngFor='let expenseGroup of expenseGroups'>
+        <ion-item-divider>
+          <ion-label>{{expenseGroup.date | date:'dd.MM.yyyy'}}</ion-label>
+        </ion-item-divider>
+        <ion-item button='true' *ngFor='let expense of expenseGroup.expenses' [detail]='true' [disabled]='loading'
+                  (click)='openModal(expense)'>
+          <ion-label>
+            <ion-grid>
+              <ion-row>
+                <ion-col>{{expense.name}}</ion-col>
+                <ion-col class='ion-text-center'>
+                  <ion-icon name='pricetag'></ion-icon>
+                  {{expense.category?.name}}</ion-col>
+                <ion-col class='ion-text-end'>{{expense.amount | currency:'CHF'}}</ion-col>
+              </ion-row>
+            </ion-grid>
+          </ion-label>
+        </ion-item>
+      </ion-item-group>
+    </ng-container>
+  </ion-list>
+  <ion-infinite-scroll [disabled]="lastPageReached || loading" (ionInfinite)="loadNextExpensePage($event)">
+    <ion-infinite-scroll-content></ion-infinite-scroll-content>
+  </ion-infinite-scroll>
+  <ion-fab slot='fixed' vertical='bottom' horizontal='end'>
+    <ion-fab-button button detail='true' (click)='openModal()'>
+      <ion-icon name='add'></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+</ion-content>
+<ion-footer role='contentinfo'>
+  <ion-toolbar>
+    <ion-buttons slot='start'>
+      <ion-button type='button' (click)='addMonths(-1)'>
+        <ion-icon slot='icon-only' name='arrow-back-outline'></ion-icon>
       </ion-button>
     </ion-buttons>
-    <ion-title>Add Expense</ion-title>
+    <ion-title>{{ date | date:'MMMM yyyy' }}
+    </ion-title>
     <ion-buttons slot='end'>
-      <ion-button type="button" color="medium" (click)="save()">
-        <ion-icon slot="start" name="save"></ion-icon>
-        Save
+      <ion-button type='button' (click)='addMonths(1)'>
+        <ion-icon slot='icon-only' name='arrow-forward-outline'></ion-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
-</ion-header>
-<ion-content class="ion-padding" [formGroup]='expenseForm'>
-  <ion-item>
-    <ion-icon name="text" slot="start"></ion-icon>
-    <ion-input maxlength="20" placeholder="Enter the expense's name"></ion-input>
-  </ion-item>
-  <ion-item>
-    <ion-icon slot="start" name="pricetag="></ion-icon>
-    <ion-select placeholder='Choose of category'>
-      <ion-select-option *ngFor="let category of categories" [value]="category.id">
-        {{category.name}}
-      </ion-select-option>
-    </ion-select>
-    <ion-button slot='end'>
-      <ion-icon slot='Icon-only' name='add'></ion-icon>
-    </ion-button>
-  </ion-item>
-  <ion-item>
-    <ion-icon slot="start" name="cash"></ion-icon>
-    <ion-input type="number" inputmode="decimal" placeholder='Enter the amount in CHF' step='0.10'></ion-input>
-    <ion-note slot='end'>CHF</ion-note>
-  </ion-item>
-  <ion-item>
-    <ion-icon slot='start' name='calendar'></ion-icon>
-    <ion-datetime-button datetime='datetime'></ion-datetime-button>
-    <ion-modal [keepContentsMounted]='true'>
-      <ng-template>
-        <ion-datetime> presentation='data' id= 'datetime'></ion-datetime>
-      </ng-template>
-    </ion-modal>
-  </ion-item>
-</ion-content>
-
-<ng-container *ngSwitchCase="null">
-  <ion-item *ngFor="let i of [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]">
-    <ion-label>
-      <ion-skeleton-text [animated]="true" style="..."></ion-skeleton-text>
-    </ion-label>
-  </ion-item>
-</ng-container>
-
-<ion-list>
-  <ion-item (click)='openModal()' button='' detail="true">
-    <ion-label>eat outside</ion-label>
-  </ion-item>
-  <ion-item (click)='openModal()' button='' detail="true">
-    <ion-label>food products</ion-label>
-  </ion-item>
-  <ion-item (click)='openModal()' button='' detail="true">
-    <ion-label>entertainment</ion-label>
-  </ion-item>
-  <ion-item (click)='openModal()' button='' detail="true">
-    <ion-label>insurance</ion-label>
-  </ion-item>
-  <ion-item (click)='openModal()' button='' detail="true">
-    <ion-label>car</ion-label>
-  </ion-item>
-</ion-list>
-
+</ion-footer>
 
