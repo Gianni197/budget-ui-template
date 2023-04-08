@@ -3,13 +3,12 @@ import { ModalController } from '@ionic/angular';
 import { BehaviorSubject, filter, from, mergeMap } from 'rxjs';
 import { CategoryModalComponent } from '../../category/category-modal/category-modal.component';
 import { ActionSheetService } from '../../shared/service/action-sheet.service';
-import { Category, Expense, ExpenseUpsertDto, SortOption } from '../../shared/domain';
+import { Category, Expense, } from '../../shared/domain';
 import { CategoryService } from '../../category/category.service';
 import { ToastService } from '../../shared/service/toast.service';
-import { FormBuilder, FormGroup, isFormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ExpenseService } from '../expense.service';
 import { format, formatISO, parseISO } from 'date-fns';
-import { ca } from 'date-fns/locale';
 
 
 @Component({
@@ -97,8 +96,8 @@ export class ExpenseModalComponent implements OnInit {
           this.submitting = false;
         },
         error: (error) => {
-          this.toastService.displayErrorToast('Could not delete expense', error),
-            this.submitting = false;
+          this.toastService.displayErrorToast('Could not delete expense', error);
+          this.submitting = false;
         },
       })
   }
